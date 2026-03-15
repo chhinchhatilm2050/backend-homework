@@ -137,4 +137,67 @@ const updateBook = async (req, res) => {
     }
 }
 
-export {insterBooks, bookCollection, findAllBooks, findBooksByCategory, findAvailableBooks, updateBook};
+const findBooksByTitle = async (req, res) => {
+    try {
+        const {title} = req.query;
+        const result = await bookCollection.find({
+            title: {$regex: title, $options: "i"}
+        }).toArray();
+        if(result.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Book title ${title} not found!`
+            })
+        }
+        res.status(200).json({
+            success: true,
+            data: result
+        })
+
+    }catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        })
+    }
+};
+
+const sortBooksByYear = async (req, res) => {
+    try {
+        const result = await bookCollection.find({})
+        .sort({ publishedYear: 1})
+        .limit(3)
+        .toArray();
+        if(result.length === 0) {
+            return res.status(404).json({
+                success: false,
+                data: "Book not found!"
+            })
+        };
+        console.log("3 Oldest Books:");
+        result.forEach((book, index) => {
+            console.log(`${index + 1}, ${book.title} ${book.publishedYear}`);
+        });
+        res.status(200).json({
+            success: true,
+            data: result
+        })
+
+    } catch(err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        })
+    }
+}
+
+export {
+    insterBooks,
+    bookCollection, 
+    findAllBooks,
+    findBooksByCategory, 
+    findAvailableBooks,
+    updateBook, 
+    findBooksByTitle,
+    sortBooksByYear
+};

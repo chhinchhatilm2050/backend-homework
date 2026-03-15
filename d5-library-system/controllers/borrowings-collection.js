@@ -44,4 +44,57 @@ const insertBorrowings = async (req, res) => {
     }
 };
 
-export { insertBorrowings };
+const overdueBorrowings = async (req, res) => {
+    try {
+        const today = new Date();
+        const result = await borrowingCollection.find({
+            status: "borrowed",
+            dueDate: {$lt: today}
+        }).toArray()
+        if(result.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Borrowings not found!"
+            })
+        }
+        console.log(`Overdue Borrowings (${result.length} found):`);
+        for (const borrowing of result) {
+            const book = await bookCollection.findOne({_id: borrowing.bookId});
+            const member = await memberCollection.findOne({_id: borrowing.memberId});
+            console.log(`- ${member.name} borrowed "${book.title}" (due: ${borrowing.dueDate.toDateString()})`);
+            
+        }
+        res.status(200).json({
+            success: true,
+            data: result
+        })
+    }catch(err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        })
+    }
+};
+const deleteReturnBook = async (req, res) => {
+    try {
+        const result = await borrowingCollection.deleteOne({status: "returned"});
+        if(result.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Borrowings not found!"
+            })
+        }
+        console.log(`✓ Deleted ${result.deletedCount} borrowing record\n`);
+        res.status(200).json({
+            success: true,
+            message: "successfully delete!"
+        })
+    } catch(err) {
+         res.status(500).json({
+            success: false,
+            message: err.message
+        })
+    }
+}
+
+export { insertBorrowings, overdueBorrowings, deleteReturnBook };
