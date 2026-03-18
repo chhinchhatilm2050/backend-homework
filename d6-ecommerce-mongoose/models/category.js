@@ -8,7 +8,7 @@ const categorySchema = new mongoose.Schema({
         minLength: [3, 'Category name must be at least 3 characters'],
         maxLength: [50, 'Category name must be at most 50 characters']
     },
-    slung: {
+    slug: {
         type: String,
         unique: true,
         lowercase: true,
@@ -42,20 +42,20 @@ const categorySchema = new mongoose.Schema({
     }
 }, {
     timestamps: true,
+    id: false,
     toJSON: { virtuals: true},
     toObject: { virtuals: true}
 });
 
-categorySchema.pre("save", function(next) {
-    if(this.isModified("name")) {
-        this.slung = this.name
+categorySchema.pre("save", async function() {
+    if (this.isModified("name")) {
+        this.slug = this.name
         .toLowerCase()
         .trim()
-        .replace(/[^a-z0-9\s-]/g, "") 
+        .replace(/[^a-z0-9\s-]/g, "")
         .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
+        .replace(/-+/g, "-");
     }
-    next();
 });
 
 const CategoryModel = mongoose.model("Category", categorySchema);

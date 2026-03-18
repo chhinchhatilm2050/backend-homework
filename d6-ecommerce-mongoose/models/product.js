@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 const productSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -80,10 +81,12 @@ const productSchema = new mongoose.Schema({
     },
     tags: {
         type: [String],
-        validate: function (tag) {
-            return tag.length <= 10;
-        },
-        message: "Product cannot have more than 10 tags"
+        validate: {                          
+            validator: function (tag) {
+                return tag.length <= 10;
+            },
+            message: "Product cannot have more than 10 tags"
+        }
     },
     specifications: {
         type: Map,
@@ -123,13 +126,13 @@ const productSchema = new mongoose.Schema({
     }
 }, {
     timestamps: true,
-    id: false,
     toJSON: { virtuals: true },
+    id: false,
     toObject: { virtuals: true },
 });
 
 productSchema.virtual("discount").get(function () {
-    if(!this.comparePrice || this.comparePrice <= this.price) return 0;
+    if (!this.comparePrice || this.comparePrice <= this.price) return 0;
     return Math.round(((this.comparePrice - this.price) / this.comparePrice) * 100);
 });
 
@@ -137,39 +140,38 @@ productSchema.virtual("inStock").get(function () {
     return this.stock > 0 && this.status === "active";
 });
 
-productSchema.method.reductStock = async function (quantity) {
-    if(this.stock < quantity) {
+productSchema.methods.reductStock = async function (quantity) {  
+    if (this.stock < quantity) {
         throw new Error(`Insufficient stock. Available: ${this.stock}`);
     }
     this.stock -= quantity;
-    if(this.stock === 0) {
+    if (this.stock === 0) {
         this.status = "out_of_stock";
     }
     return await this.save();
-}
+};
 
-productSchema.static.findByCategory = async function (categoryId) {
+productSchema.statics.findByCategory = async function (categoryId) {  
     return await this.find({
         category: categoryId,
         status: "active"
-    }).populate("category", "name slug").sort({createdAt: -1});
+    }).populate("category", "name slug").sort({ createdAt: -1 });
 };
 
-productSchema.pre("save", function (next) {
-    if(this.isModified("name")) {
+productSchema.pre("save", async function () {
+    if (this.isModified("name")) {
         this.slug = this.name
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-");
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9\s-]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/-+/g, "-");
     }
-    next();
 });
 
-productSchema.pre("save", function(next) {
-    if(this.isModified("price") || this.isModified("comparePrice")) {
-        if(this.comparePrice && this.comparePrice > this.price) {
+productSchema.pre("save", async function () {
+    if (this.isModified("price") || this.isModified("comparePrice")) {
+        if (this.comparePrice && this.comparePrice > this.price) {
             this.discountPercentage = Math.round(
                 ((this.comparePrice - this.price) / this.comparePrice) * 100
             );
@@ -177,8 +179,7 @@ productSchema.pre("save", function(next) {
             this.discountPercentage = 0;
         }
     }
-    next();
 });
 
-const ProductModel = mongoose.Model('Product', productSchema);
-export {ProductModel};
+const ProductModel = mongoose.model('Product', productSchema); // ✅ lowercase model
+export { ProductModel };
