@@ -6,9 +6,6 @@ import mongoose from 'mongoose';
 
 const createProduct = asyncHandler( async(req, res, next) => {
     const {name, description, price, comparePrice, category, sku, stock, images, tags, specifications, status,featured } = req.body;
-    if(!name || !description || !price || !category || !sku || !images) {
-        return next(new AppError('Please provide all required fields', 400));
-    }
     if(!mongoose.Types.ObjectId.isValid(category)) {
         return next(new AppError("Invalid category ID", 400));
     };

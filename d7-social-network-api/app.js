@@ -4,13 +4,15 @@ import { errorHandler, notFound } from './middlewares/errorHandler.js';
 import { globalLimiter } from './middlewares/rateLimit.js';
 import { requestLogger} from './middlewares/logger.js';
 import helmet from 'helmet';
+import { router } from './routes/index.js';
 
 const app = express();
 app.use(requestLogger);
-app.use(helmet);
+app.use(helmet());
 app.use(globalLimiter);
 app.use(express.json());
 
+app.use('/api', router);
 app.use(errorHandler);
 app.use(notFound);
 

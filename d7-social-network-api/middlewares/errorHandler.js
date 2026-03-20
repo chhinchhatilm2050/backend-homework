@@ -4,8 +4,27 @@ const errorHandler = (err, req, res, next) => {
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
 
+    if(err.name === 'CastError') {
+        err.statusCode = 400;
+        err.status = 'fail';
+        err.message = `Invalid ${err.path}: ${err.value}`;
+    }
+
+    if(err.code === 11000) {
+        const field = Object.keys(err.keyValue)[0];
+        const messages = {
+            follower: 'You are already following this user',
+            email: 'This email is already exists',
+            username: 'This username is already exists'
+        };
+        err.statusCode = 400;
+        err.status = 'fail';
+        err.message = messages[field] || `${field} already exists`;
+    }
+    
     console.error(`${err.status.toUpperCase()} ${err.statusCode}`);
     console.error(`Message: ${err.message}`);
+    
 
     if(isDev) {
         console.log(`Stack: ${err.stack}`);
