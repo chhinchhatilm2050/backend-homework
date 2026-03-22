@@ -84,7 +84,7 @@ reviewSchema.statics.calculateAverageRating = async function (productId) {
 };
 
 reviewSchema.post("save", async function() {
-    await this.constructor.calculateAverageRating(this.product);
+  await this.constructor.calculateAverageRating(this.product);
 })
 
 const ReviewModel = mongoose.model('Review', reviewSchema);
