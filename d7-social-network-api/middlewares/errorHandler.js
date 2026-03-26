@@ -1,4 +1,4 @@
-import { AppError } from "../utils/appError.js";
+import AppError from "../utils/appError.js";
 const errorHandler = (err, req, res, next) => {
     const isDev = process.env.NODE_ENV === 'development';
     err.statusCode = err.statusCode || 500;

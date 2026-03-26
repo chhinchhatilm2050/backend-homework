@@ -6,7 +6,8 @@
   "scripts": {
     "start": "nodemon server.js",
     "dev": "nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "fixtures": "node ./utils/fixtures.js"
   },
   "keywords": [],
   "author": "",
@@ -15,8 +16,9 @@
   "dependencies": {
     "@faker-js/faker": "^10.3.0",
     "dotenv": "^17.3.1",
-    "express": "^5.2.1",
+    "express": "^4.22.1",
     "express-async-handler": "^1.2.0",
+    "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^8.3.1",
     "helmet": "^8.1.0",
     "mongoose": "^9.3.1",
