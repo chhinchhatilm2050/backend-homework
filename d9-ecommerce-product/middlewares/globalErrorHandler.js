@@ -1,14 +1,18 @@
-import { handleCastError, handleDuplicateError } from "../utils/errorHandler.js";
+import { handleCasteError, handleDuplicateError } from "../utils/erroHandler.js";
+
 const globalErrorHandler = (err, req, res, next) => {
     const isDev = process.env.NODE_ENV === 'development';
     err.statusCode = err.statusCode || 500;
-    err.status = err.status || 'error';
-
-    let error = {...err, message: err.message};
-    if(err.name === 'CastError') error = handleCastError(err);
-    if(err.code === 11000) error = handleDuplicateError(err);
-    if(isDev) console.log(`Stack: ${err.stack}`);
+    err.status = err.status || 'fail';
     
+    let error = {...err, message: err.message};
+    if(err.name === 'CastError') error = handleCasteError(err);
+    if(err.code === 11000) error = handleDuplicateError(err);
+
+    if(isDev) {
+        console.log(`Stack: ${err.stack}`);
+    }
+
     if(isDev) {
         res.status(error.statusCode).json({
             status: error.status,
@@ -19,14 +23,15 @@ const globalErrorHandler = (err, req, res, next) => {
         if(error.isOperational) {
             res.status(error.statusCode).json({
                 status: error.status,
-                message: error.message,
+                message: error.message
             })
         } else {
             res.status(error.statusCode).json({
-                status: error.status,
-                message: 'something went wrong'
+                status: error.statusCode,
+                message: 'Something went wrong'
             })
         }
     }
-}
+};
+
 export default globalErrorHandler;
