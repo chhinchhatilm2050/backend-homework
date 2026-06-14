@@ -24,11 +24,6 @@ const createCategoryValidation = [
 ];
 
 const updateCategoryValidation = [
-  body('createdBy')
-    .notEmpty()
-    .withMessage('Createdby is requied')
-    .isMongoId()
-    .withMessage('Invalid category ID'),
   body('name')
     .optional()
     .trim()

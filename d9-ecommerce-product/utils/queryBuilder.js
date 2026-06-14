@@ -13,6 +13,7 @@ class QueryBuilder {
     const queryObj = {...this.queryString};
     const excludeFields = ['page', 'limit', 'sort', 'fields', 'search'];
     excludeFields.forEach(field => delete queryObj[field]);
+    queryObj.isDeleted = false;
     
     if(queryObj.featured !== undefined) {
       queryObj.featured = queryObj.featured === 'true';
@@ -47,7 +48,7 @@ class QueryBuilder {
       if (!/^[-\w,]+$/.test(rawData)) {
         throw new AppError('Invalid fields parameter', 400);
       }
-      const fields = rawData.split(',').join('');
+      const fields = rawData.split(',').join(' ');
       this.query = this.query.select(fields);
     } else {
       this.query = this.query.select('-__v');
@@ -56,14 +57,15 @@ class QueryBuilder {
   };
 
   paginate() {
-    const skip = (this.queryString.page -1) * this.limit;
-    this.page = this.queryString.page;
-    this.limit = this.queryString.limit;
+    this.page = this.queryString.page || 1;    
+    this.limit = this.queryString.limit || 20; 
+    const skip = (this.page - 1) * this.limit;
     this.query = this.query.skip(skip).limit(this.limit);
     return this;
   };
   async execute() {
-    const [data, total] = await Promise.all([this.query, this.model.countDocuments(this.query)]);
+    const filter = this.query.getFilter();  
+    const [data, total] = await Promise.all([this.query, this.model.countDocuments(filter)]);
     const totalPage = Math.ceil(total / this.limit);
 
     return {
@@ -74,7 +76,7 @@ class QueryBuilder {
         limit: this.limit,
         totalPage,
         hastNextPage: this.page < totalPage,
-        hasPrepage: this.page > 1
+        hasPrevpage: this.page > 1
       }
     };
   }

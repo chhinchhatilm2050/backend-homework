@@ -17,7 +17,7 @@ const postSchema = new mongoose.Schema({
   content: {
     type: String,
     required: true,
-    minLength: 100,
+    minLength: 10,
     trim: true
   },
   excerpt: {
@@ -80,7 +80,16 @@ const postSchema = new mongoose.Schema({
     expires: 60 * 60 * 24 * 90
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: {virtuals: true},
+  toObject: { virtuals: true }
+});
+
+postSchema.virtual('comments', {
+  ref: 'Comment',
+  localField: '_id',
+  foreignField: 'post',
+  match: { isDeleted: false }
 });
 
 postSchema.pre('save', async function () {

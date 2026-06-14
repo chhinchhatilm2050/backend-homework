@@ -8,12 +8,7 @@ const createCommentValidation = [
     .withMessage('Comment content is required')
     .isLength({min: 10, max: 1000})
     .withMessage('Comment must be 10-1000 characters'),
-  body('author')
-    .notEmpty()
-    .withMessage('Author is required')
-    .isMongoId()
-    .withMessage('Invalid author ID'),
-  body('post')
+  param('post')
     .notEmpty()
     .withMessage('Post ID is required')
     .isMongoId()
@@ -26,7 +21,6 @@ const updateCommentValidation = [
   param('id')
     .isMongoId()
     .withMessage('Invalid comment ID'),
-  
   body('content')
     .trim()
     .notEmpty()

@@ -39,7 +39,8 @@ const commentSchema = new mongoose.Schema({
     default: false
   },
   deletedAt: {
-    type: Date
+    type: Date,
+    expires: 60 * 60 * 24 * 90
   }
 }, {
   timestamps: true
@@ -49,6 +50,19 @@ commentSchema.pre('save', async function () {
   if (this.isModified('content') && !this.isNew) {
     this.isEdited = true,
     this.editedAt = new Date();
+  }
+});
+
+commentSchema.pre('findOneAndUpdate', async function () {
+  const update = this.getUpdate();
+
+  if (update.$set?.content) {
+    const original = await this.model.findOne(this.getFilter());
+    if (original.content !== update.$set.content) {
+      update.$set.isEdited = true;   
+    } else {
+      update.$set.isEdited = false; 
+    }
   }
 });
 
@@ -72,8 +86,6 @@ commentSchema.methods.softDelete = async function() {
 
 commentSchema.index({ post: 1 });
 commentSchema.index({ author: 1 });
-commentSchema.index({ status: 1 });
-commentSchema.index({ createdAt: -1 });
 
 const CommentModel = mongoose.model('Comment', commentSchema);
 export default CommentModel;

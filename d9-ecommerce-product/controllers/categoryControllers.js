@@ -1,16 +1,16 @@
 import CategoryModel from '../model/Category.js';
 import AppError from '../utils/appError.js';
 import asyncHandler from 'express-async-handler';
-import UserModel from '../model/User.js';
 
-export const createCategory = asyncHandler(async(req, res, next) => {
-  const {createdBy } = req.body;
-  const userExist = await UserModel.findById(createdBy);
-  if(!userExist) {
-    return next(new AppError('User not found', 404));
-  }
-  
-  const category = new CategoryModel(req.body);
+export const createCategory = asyncHandler(async(req, res, _next) => {
+  const author = req.user._id;
+  const {name, description, color} = req.body;
+  const category = new CategoryModel({
+    name,
+    description,
+    color,
+    author
+  });
   await category.save();
 
   res.status(201).json({
@@ -32,7 +32,7 @@ export const getAllCategory = asyncHandler (async(req, res, next) => {
 });
 
 export const getCategoryById = asyncHandler (async(req, res, next) => {
-  const category = await CategoryModel.findById(req.params.id);
+  const category = await CategoryModel.findOne({_id: req.params.id, isDeleted: false});
   if(!category) {
     return next(new AppError('Category not found', 404));
   }
@@ -42,23 +42,13 @@ export const getCategoryById = asyncHandler (async(req, res, next) => {
   });
 });
 
-export const updateCategory = asyncHandler (async (req, res, next) => {
-  const {id} = req.params;
-  const {createdBy, name, description} = req.body;
-  
-  const category = await CategoryModel.findById(id);
-
-  if(!category) {
-    return next(new AppError('Category not found', 404));
-  }
-
-  if(category.createdBy.toString() !== createdBy.toString()) {
-    return next(new AppError('You do not have permission to delete this category', 403));
-  }
+export const updateCategory = asyncHandler (async (req, res, _next) => {
+  const { name, description, color } = req.body;
+  const category = req.resource;
   
   const updateCategory = await CategoryModel.findByIdAndUpdate(
-    id,
-    { name, description},
+    category._id,
+    { $set: {name, description, color}},
     { new: true, runValidators: true}
   );
 
@@ -68,22 +58,9 @@ export const updateCategory = asyncHandler (async (req, res, next) => {
   });
 });
 
-export const deleteCategory = asyncHandler (async (req, res, next) => {
-  const {createdBy} = req.body;
-  if(!createdBy) {
-    return next(new AppError('Createdby is required', 400));
-  }
-  const category = await CategoryModel.findById(req.params.id);
-  if(!category) {
-    return next(new AppError('Category not found', 404));
-  }
-
-  if(category.createdBy.toString !== createdBy.toString()) {
-    return next(new AppError('You cannot delete this category because you did not create it', 403));
-  }
-
+export const deleteCategory = asyncHandler (async (req, res, _next) => {
+  const category = req.resource;
   category.softDelete();
-  await category.save();
   
   res.status(200).json({
     status: 'success',

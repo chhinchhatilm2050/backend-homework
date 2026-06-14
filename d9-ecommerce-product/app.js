@@ -8,6 +8,7 @@ import requestLogger from './middlewares/logger.js';
 import mongoSanitize from 'express-mongo-sanitize';
 import { sanitizeHtml } from './middlewares/sanitizeHtml.js';
 import router from './routes/index.js';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 app.use(express.json());
@@ -20,6 +21,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(sanitizeHtml);
+app.use(cookieParser());
 
 app.use('/api', router);
 

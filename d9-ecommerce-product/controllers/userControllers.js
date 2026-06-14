@@ -3,8 +3,10 @@ import asyncHandler from 'express-async-handler';
 import AppError from '../utils/appError.js';
 
 export const createUser = asyncHandler(async(req, res, _next) => {
-  const user = new UserModel(req.body);
+  const { name, email, password, bio, avatar } = req.body;
+  const user = new UserModel({ name, email, password, bio, avatar });
   await user.save();
+
   res.status(201).json({
     status: 'success',
     data: { user }
@@ -32,7 +34,6 @@ export const getUserById = asyncHandler (async(req, res, next) => {
 });
 
 export const updateUser = asyncHandler (async(req, res, next) => {
-  const {id} = req.params;
   const {name, email, bio, avatar } = req.body;
   const allowedFields = ['name', 'email', 'bio', 'avatar'];
   const sentFields = Object.keys(req.body);
@@ -44,10 +45,11 @@ export const updateUser = asyncHandler (async(req, res, next) => {
 
   if(!name && !email && !bio && !avatar) {
     return next(new AppError('Please provide at least one filed to update', 400));
-  }
+  };
+  const users = req.resource;
   const user = await UserModel.findByIdAndUpdate(
-    id,
-    { $set:{ name, email, bio, avatar }},
+    users._id,
+    { $set: req.body},
     {
       new: true,
       runValidators: true
@@ -61,7 +63,7 @@ export const updateUser = asyncHandler (async(req, res, next) => {
 });
 
 export const deleteUser = asyncHandler (async(req, res, next) => {
-  const user = await UserModel.findByIdAdndDelete(req.params.id);
+  const user = await UserModel.findByIdAndDelete(req.params.id);
   if(!user) {
     return next(new AppError('User not found to delete', 404));
   } 

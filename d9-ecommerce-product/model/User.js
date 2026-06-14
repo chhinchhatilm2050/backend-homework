@@ -24,6 +24,9 @@ const userSchema = new mongoose.Schema({
     select: false,
     match: [PASSWORD_REGEX, 'Invalid password']
   },
+  refreshToken: {
+    type: String
+  },
   bio: {
     type: String,
     maxLength: 500,
@@ -53,6 +56,10 @@ userSchema.pre('save', async function () {
 
 userSchema.methods.comparePassword = async function (inputPassword) {
   return await bcrypt.compare(inputPassword, this.password);
+};
+
+userSchema.methods.isMatch = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
 const UserModel = mongoose.model('User', userSchema);

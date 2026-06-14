@@ -20,7 +20,7 @@ const categorySchema = new mongoose.Schema({
     maxLength: 500,
     trim: true
   },
-  createdBy: {
+  author: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true

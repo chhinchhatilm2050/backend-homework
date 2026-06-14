@@ -13,7 +13,7 @@ const createPostValidation = [
     .trim()
     .notEmpty()
     .withMessage('Content is required')
-    .isLength({min: 100})
+    .isLength({min: 10})
     .withMessage('Content must be at least 100 characters'),
   body('excerpt')
     .optional()
@@ -167,11 +167,6 @@ const postIdValidation = [
     .withMessage('Post ID is required')
     .isMongoId()
     .withMessage('Invalid post ID'),
-  body('id')
-    .notEmpty()
-    .withMessage('User ID is required')
-    .isMongoId()
-    .withMessage('Invalid userId'),
   validate
 ];
 
